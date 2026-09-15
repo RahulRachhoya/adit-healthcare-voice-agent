@@ -150,7 +150,9 @@ Keep calling disabled until the cloud checks and available trial credit are conf
 
 ## Reviewer expectations and recovery
 
-Render's first page load after sleeping can be slow. Open the dashboard ahead of the review; do not use artificial keepalive traffic to defeat the free plan's sleep policy. Once dispatched, the conversation runs on LiveKit independently of the web service.
+Render's first page load after sleeping can be slow. An external HTTP monitor can check the public `/healthz` endpoint every five minutes, which should prevent the normal 15-minute idle timeout. For this deployment, use `https://adit-healthcare-dashboard.onrender.com/healthz`, friendly name `Adit assessment dashboard`, the free five-minute interval, and no authentication. UptimeRobot's free monitor uses HEAD; the application supports both GET and HEAD on this endpoint. It returns only application liveness and does not start telephone calls.
+
+Monitoring does not guarantee continuous availability. Render's 750 free instance hours are shared across the workspace; one continuously running service uses 720 hours in a 30-day month or 744 hours in a 31-day month. Other free services can exhaust the remaining allowance. Provider outages, deployments, and quota suspension can still interrupt access. Once dispatched, the conversation runs on LiveKit independently of the web service.
 
 After prolonged inactivity, check whether Supabase needs to be resumed. Refresh synthetic appointment slots before the demonstration. Provider credits and model quotas can run out independently.
 

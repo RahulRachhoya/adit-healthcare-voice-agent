@@ -6,7 +6,7 @@ Responses are JSON. Authentication failure returns `401`; CSRF or destination re
 
 | Method/path | Contract |
 |---|---|
-| `GET /healthz` | Public liveness: `{"status":"ok"}`. Does not prove provider or database readiness. |
+| `GET /healthz`, `HEAD /healthz` | Public liveness. GET returns `{"status":"ok"}`; HEAD returns HTTP 200 with an empty body for uptime monitors. Does not prove provider or database readiness. |
 | `GET /api/readiness` | Configuration presence, missing variable names, manual trial attestation and limits; no values/secrets |
 | `POST /api/calls` | Header `Idempotency-Key` (1–100 chars), patient body; `202` with persisted call detail |
 | `GET /api/calls` | `{"calls":[...]}`; most recent 50 summaries |

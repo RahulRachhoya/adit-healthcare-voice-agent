@@ -27,7 +27,7 @@ def render(request, name, **context):
     )
 
 
-@router.get("/healthz")
+@router.api_route("/healthz", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
 
