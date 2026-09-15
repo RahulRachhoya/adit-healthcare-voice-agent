@@ -12,7 +12,11 @@ An outbound healthcare voice agent using **LiveKit Agents and Python**. The dash
 - [Architecture and failure handling](docs/architecture.md)
 - [Public deployment guide](docs/deployment.md)
 
-Public deployment is being prepared. The hosted address will be added after verification; reviewer login credentials are shared privately. Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository.
+**[Open the hosted dashboard](https://adit-healthcare-dashboard.onrender.com)** · **[GitHub checks](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/workflows/checks.yml)** · **[Deployment evidence](docs/deployment-evidence.md)**
+
+The dashboard runs on Render Free, the voice worker on LiveKit Cloud, and the shared database on Supabase Free. Reviewer login credentials are shared privately. Calls require the operator login, an approved recipient, and explicit form submission. No call starts merely by opening the site.
+
+Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository. Hosted login, protected API access, database access, and worker registration are verified; the recorded telephone evidence below is from the local deployment. A new call from the hosted dashboard has not been placed.
 
 ## Implementation status
 
@@ -97,7 +101,7 @@ GitHub Pages serves static sites; it cannot run this Python application. GitHub 
 └── .github/workflows/
 ```
 
-The LiveKit CLI generates `livekit.toml` when the hosted agent is created. It contains deployment identifiers, not credentials. Operator commands are implemented once in `cli.py`; web routes delegate business logic to services.
+The committed `livekit.toml` identifies this hosted agent and contains no credentials. When deploying your own fork, generate configuration for your own LiveKit project. Operator commands are implemented once in `cli.py`; web routes delegate business logic to services.
 
 ## Local quick start
 
@@ -171,7 +175,7 @@ docker build -f Dockerfile.web -t adit-web:check .
 docker build -f Dockerfile -t adit-agent:check .
 ```
 
-Ordinary tests use fake external services and never dial. PostgreSQL concurrency tests require a dedicated `TEST_DATABASE_URL`. The previous full local verification passed 93 tests; a later focused check passed 69. These are historical results; GitHub Actions reports the current commit's status.
+Ordinary tests use fake external services and never dial. PostgreSQL concurrency tests require a dedicated `TEST_DATABASE_URL`. The initial public commit passed both GitHub Actions jobs: lint/migrations/tests and clean Linux builds of both containers. [Current checks](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/workflows/checks.yml) report subsequent commits. Historical local verification passed 93 tests; a later focused check passed 69.
 
 The checks workflow runs lint, migrations, tests, and both container builds. The agent-deployment workflow is manually triggered after initial cloud setup. Follow [deployment.md](docs/deployment.md) for service configuration, secrets, first deployment, redeployment, and recovery.
 

@@ -36,7 +36,7 @@ flowchart LR
   LiveKit --> Opik[Opik trace and online evaluation]
 ```
 
-The local workstation is not part of the hosted runtime. Local development uses a different dispatch name and its own Docker PostgreSQL database.
+The local workstation is not part of the hosted runtime. Local development uses a different dispatch name and its own Docker PostgreSQL database. See [deployment-evidence.md](deployment-evidence.md) for the actual hosted address, verified checks, and the distinction between local call evidence and hosted infrastructure verification.
 
 ## 1. Prepare the database
 
@@ -100,7 +100,7 @@ lk cloud auth
 Prepare a private secrets file outside tracked source. Give the agent the shared database URL, public application URL, production configuration, `LIVEKIT_AGENT_NAME=adit-healthcare-cloud`, SIP, Gemini, storage, and Opik settings. LiveKit Cloud injects its own `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`; omit those three from the agent secrets file.
 
 ```shell
-lk agent create --secrets-file /PRIVATE/PATH/agent.env
+lk agent create --region ap-south --secrets-file /PRIVATE/PATH/agent.env
 ```
 
 The CLI creates `livekit.toml`. Commit that deployment-identifier file after creation. Verify the agent is healthy and its dispatch name matches the dashboard. Do not register the local worker with the cloud dispatch name against the local database.
@@ -114,6 +114,8 @@ lk agent logs
 ```
 
 Store runtime secret updates through LiveKit's secret-management command or dashboard. Do not add private `.env` files to the Docker build context.
+
+For Windows workspaces with inaccessible generated folders, deploy from a clean checkout or an export of committed source. LiveKit CLI 2.18.6 traversed a denied local test-cache directory despite `.dockerignore`; deploying a clean source export succeeded. Keep the secrets file outside that export and use its absolute path. If a failed `create` already allocated an agent, use `lk agent list`, then `lk agent config --id EXISTING_AGENT_ID` and `lk agent deploy` to reuse it. Do not create duplicate agents or change unrelated folder permissions.
 
 ## 4. GitHub Actions
 
@@ -131,7 +133,7 @@ Tests use fake voice/model/storage services and a dedicated disposable PostgreSQ
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`
 
-Runtime database, model, recording, and Opik credentials remain in LiveKit/Render. The deployment workflow requires an existing committed `livekit.toml`; it does not create accounts or place calls. Run it only after the same commit's checks pass. Its presence in the repository does not mean its credentials or environment have already been configured.
+Runtime database, model, recording, and Opik credentials remain in LiveKit/Render. The deployment workflow requires an existing committed `livekit.toml`; it does not create accounts or place calls. Run it only after the same commit's checks pass. This repository's `production` environment has the three approved deployment secrets and permits deployments from `main` only. Forks must configure their own environment and deployment identifiers.
 
 ## 5. Verify before sharing
 

@@ -73,6 +73,4 @@ playback. Regression tests reproduced the confirmation and recording failures
 before the fixes. The tested changes were made after this call; a second
 telephone call was not placed.
 
-The [narrated walkthrough script](demo-guide.md) is ready. A separate screen
-recording of that walkthrough has not been captured. Share the actual call
-audio and account access only with the intended reviewer.
+The [reviewer walkthrough](demo-guide.md) is ready for live or recorded presentation. A separate screen recording has not been captured and is not a required format in the PDF. Share the actual call audio and account access only with the intended reviewer. This evidence belongs to the local deployment; see [deployment evidence](deployment-evidence.md) for the additional cloud verification.

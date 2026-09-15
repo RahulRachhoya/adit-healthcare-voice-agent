@@ -13,7 +13,7 @@ Source: the supplied one-page **Adit Assignment.pdf**. The PDF is assessment mat
 | Automatic online evaluation | `evaluations/`, configuration CLI | Real call trace scored automatically by active Opik rule | Actual call scored 1.0 with source `online_scoring`; separate five synthetic cases remain recorded |
 | Standalone, reusable Opik integration | Single integration module with ordinary dictionary interface | Copy module into another project | Copy/import independence tested |
 | Working code and clear README | Repository, lockfile, migrations, docs, tests | Clean install and reproducible commands | Fresh locked Python installation, 93 tests, Ruff and migration check passed |
-| Full demonstration and explanation | `demo-guide.md`, `architecture.md` | Walkthrough, actual call/trace/evaluation identifiers and explanation of the implementation | Real call audio/report/trace/score available; separate narrated screen walkthrough remains |
+| Full demonstration and explanation | `demo-guide.md`, `architecture.md` | Walkthrough, actual call/trace/evaluation identifiers and explanation of the implementation | Real call audio/report/trace/score available; reviewer walkthrough is prepared for live or recorded presentation |
 
 The PDF's final deliverable bullet is incomplete. The implementation follows its earlier explicit modular integration requirement rather than inventing additional obligations.
 
@@ -29,5 +29,4 @@ Login, recipient restrictions, time/attempt limits, saved booking records, retri
 
 The implemented telephone workflow and its required evidence are verified.
 See [the actual call](call-evidence.md) for identifiers, recording and automatic
-score. A separate narrated screen walkthrough remains before a submission
-claim covering that deliverable. Public deployment is not a completion gate.
+score. Present the complete workflow and implementation explanation to the reviewer using the [demo guide](demo-guide.md); a separate narrated video is optional. The additional hosted infrastructure is documented in [deployment evidence](deployment-evidence.md). A hosted telephone call has not been verified, and the cloud database does not contain the historical local call.

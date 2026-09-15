@@ -37,15 +37,15 @@
 - Conversational identity, recipient intent and chosen appointment semantics still require real-call evaluation. The booking service checks the latest affirmative response, but does not independently prove the entire preceding spoken slot confirmation.
 - `disconnected` is supported as a lifecycle value; a normal SDK close can be recorded as `completed`. Transcript/analysis determines whether the conversation was interrupted or the recipient declined.
 - Login throttling is process-local; restarting the web service resets that short-term guard.
-- The local web process, voice worker and database must stay running during the demonstration. The computer must remain awake and connected.
+- Local demonstrations require the local web process, worker, and Docker database to remain running. The hosted deployment runs independently of the workstation.
 - Model access and quota must be rechecked before the real demonstration. Gemini 2.5 Flash was unavailable for this key; 3.6 Flash succeeded after initial timeout/capacity errors. Minimal-thinking tool turns took 3.01 and 1.79 seconds in one synthetic check; these are observations, not a latency guarantee.
 - Analysis validates booking facts and reference IDs. It does not deterministically validate every natural-language sentence; the online rubric and reviewer cover that gap.
 - Opik/LLM and transcript errors must remain visible. One real completed call and five synthetic judge cases passed; this does not establish general reliability across all conversations.
-- The audio link to `127.0.0.1` only opens on the machine running the app. Demonstrate playback locally; the stored endpoint/bucket/key is the permanent audio reference.
-- Public reviewer hosting is being prepared using Render Free, LiveKit Cloud Build, and Supabase Free. Sleep, quota, and inactivity limits apply; see [deployment.md](deployment.md).
+- The historical local call's audio link to `127.0.0.1` requires the local app. New hosted calls use the public app address with authenticated, temporary playback URLs. The stored endpoint/bucket/key remains the permanent audio reference.
+- Public reviewer hosting is running on Render Free, LiveKit Cloud Build, and Supabase Free. Login, protected APIs, database access, and the registered cloud worker are verified; a hosted telephone call has not been placed. Sleep, quota, and inactivity limits apply; see [deployment evidence](deployment-evidence.md) and [deployment.md](deployment.md).
 
 ## Remaining completion checklist
 
-1. Capture the separate narrated screen walkthrough using the verified call and [demo script](demo-guide.md).
-2. Replace any credential shared in chat privately before sharing access, then recreate the application containers.
+1. Present the complete reviewer walkthrough using the verified call and [demo script](demo-guide.md), live or recorded. A separately authorized hosted call would verify the new deployment end to end.
+2. Replace any credential shared in chat privately before sharing access, then update the affected local and hosted services.
 3. Additional live refusal, unanswered and hangup scenarios remain optional manual verification; automated tests cover their application behavior. Do not redial without the recipient's agreement.
