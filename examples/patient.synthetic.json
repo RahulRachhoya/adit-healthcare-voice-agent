@@ -1,0 +1,10 @@
+{
+  "name": "Alex Morgan",
+  "phone": "+12025550123",
+  "timezone": "Asia/Kolkata",
+  "biomarkers": [
+    {"name": "Blood glucose", "value": "110", "unit": "mg/dL", "measured_at": "2026-09-10"},
+    {"name": "HbA1c", "value": "5.8", "unit": "%", "measured_at": "2026-09-10"}
+  ],
+  "recipient_consented": true
+}

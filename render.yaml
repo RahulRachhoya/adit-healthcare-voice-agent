@@ -1,0 +1,87 @@
+# One free dashboard service. The voice worker runs on LiveKit Cloud.
+# Enter sync:false values in Render; never put real secrets in this file.
+services:
+  - type: web
+    name: adit-healthcare-dashboard
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile.web
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_BASE_URL
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: operator
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: LIVE_CALLS_ENABLED
+        value: "false"
+      - key: FREE_TRIAL_VERIFIED
+        value: "false"
+      - key: ALLOWED_PHONE_NUMBERS
+        sync: false
+      - key: MAX_CALL_ATTEMPTS
+        value: "10"
+      - key: MAX_CALL_SECONDS
+        value: "180"
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_AGENT_NAME
+        value: adit-healthcare-cloud
+      - key: LIVEKIT_SIP_TRUNK_ID
+        sync: false
+      - key: LIVEKIT_DESTINATION_COUNTRY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: GEMINI_ANALYSIS_MODEL
+        value: gemini-3.5-flash-lite
+      - key: STT_MODEL
+        value: deepgram/nova-3
+      - key: TTS_MODEL
+        value: cartesia/sonic-3
+      - key: TTS_VOICE
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RECORDING_BUCKET
+        value: call-recordings
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: OPIK_API_KEY
+        sync: false
+      - key: OPIK_WORKSPACE
+        sync: false
+      - key: OPIK_PROJECT_NAME
+        value: adit-healthcare
+      - key: OPIK_RULE_ID
+        sync: false

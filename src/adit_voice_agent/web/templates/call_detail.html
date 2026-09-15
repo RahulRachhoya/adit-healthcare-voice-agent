@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Call review · Adit{% endblock %}
+{% block content %}
+<div data-page="detail" data-call-id="{{ call_id }}">
+  <a class="back-link" href="/">← All conversations</a>
+  <section class="page-heading"><div><p class="eyebrow">CONVERSATION REVIEW</p><h1 id="call-title">Loading conversation…</h1><p class="lead" id="call-subtitle"></p></div><div class="row"><span class="badge neutral" id="call-status">Loading</span><button class="button danger" type="button" id="end-call">End call</button></div></section>
+  <div id="page-message" class="notice hidden" role="status"></div>
+  <div class="review-grid">
+    <section class="card transcript-card"><div class="card-heading row-between"><div><span class="mini-label">THE CONVERSATION</span><h2>Transcript</h2></div><button class="button subtle" type="button" id="refresh-detail">Refresh</button></div><div id="transcript" aria-live="polite"></div></section>
+    <aside class="stack">
+      <section class="card"><span class="mini-label">APPOINTMENT</span><h2 id="booking-title">Awaiting outcome</h2><div id="booking"></div></section>
+      <section class="card" id="recording"><span class="mini-label">CALL AUDIO</span><h2>Recording</h2><p id="recording-status" class="muted">Pending</p><button class="button subtle hidden" id="load-recording" type="button">Load recording</button><audio id="call-audio" class="hidden" controls preload="none"></audio></section>
+      <section class="card accent-card"><span class="mini-label">INDEPENDENT REVIEW</span><h2>Opik evaluation</h2><div id="evaluation"></div><a id="opik-link" class="button subtle hidden" target="_blank" rel="noopener noreferrer">Open call in Opik ↗</a></section>
+    </aside>
+  </div>
+  <div class="two-columns bottom-grid"><section class="card"><span class="mini-label">POST-CALL</span><h2>Analysis</h2><div id="analysis"></div></section><section class="card"><span class="mini-label">EXECUTION EVIDENCE</span><h2>Tool activity</h2><div id="tools"></div></section></div>
+</div>
+{% endblock %}

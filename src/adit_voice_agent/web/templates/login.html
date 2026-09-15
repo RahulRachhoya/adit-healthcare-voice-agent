@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="login-layout">
+  <div class="login-intro"><p class="eyebrow">CARE, IN CONVERSATION</p><h1>A clearer view<br>of every call.</h1><p class="lead">A focused workspace for healthcare outreach, appointment booking, and conversation review.</p><div class="steps"><span>01 · Call</span><span>02 · Review</span><span>03 · Evaluate</span></div></div>
+  <section class="card login-card">
+    <div class="card-heading"><span class="mini-label">OPERATOR ACCESS</span><h2>Welcome back</h2><p>Sign in to manage the assessment.</p></div>
+    {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="/login" class="stack">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Username<input name="username" autocomplete="username" required maxlength="100"></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="1000"></label>
+      <button class="button primary" type="submit">Sign in <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="small muted">Access is restricted to the assessment operator.</p>
+  </section>
+</section>
+{% endblock %}

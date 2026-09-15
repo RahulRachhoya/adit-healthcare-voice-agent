@@ -1,0 +1,28 @@
+name: Deploy LiveKit agent
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-agent
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Require an existing cloud deployment
+        run: test -f livekit.toml
+      - name: Deploy agent code
+        uses: livekit/deploy-action@48cc4d2614132f7d67d04d38c62b47ba29c027e0 # v2.12.2
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+        with:
+          OPERATION: deploy
+          WORKING_DIRECTORY: .
+          TIMEOUT: 15m

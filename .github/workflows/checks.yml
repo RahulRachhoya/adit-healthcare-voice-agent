@@ -1,0 +1,44 @@
+name: Assessment checks
+on: [push, pull_request]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: adit_test
+          POSTGRES_USER: adit
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U adit -d adit_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://adit:ci-only-password@localhost:5432/adit_test
+      TEST_DATABASE_URL: postgresql+psycopg://adit:ci-only-password@localhost:5432/adit_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.11"
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run alembic upgrade head
+      - run: uv run alembic check
+      - run: uv run pytest -q
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build dashboard image without credentials
+        run: docker build --file Dockerfile.web --tag adit-web:check .
+      - name: Build agent image without credentials
+        run: docker build --file Dockerfile --tag adit-agent:check .

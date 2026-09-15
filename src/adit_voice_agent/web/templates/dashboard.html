@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div data-page="dashboard">
+  <section class="page-heading"><div><p class="eyebrow">OUTREACH WORKSPACE</p><h1>Make every conversation count.</h1><p class="lead">Start a test call, then follow its outcome from conversation to evaluation.</p></div><span class="badge neutral" id="readiness-badge">Checking setup</span></section>
+  <div id="page-message" class="notice hidden" role="status"></div>
+  <div class="dashboard-grid">
+    <section class="card">
+      <div class="card-heading row-between"><div><span class="mini-label">START HERE</span><h2>New test call</h2></div><span class="round-icon" aria-hidden="true">↗</span></div>
+      <form id="call-form" class="stack">
+        <div class="two-columns"><label>Patient name<input name="name" placeholder="Alex Morgan" required maxlength="100"></label><label>Approved phone number<input name="phone" type="tel" placeholder="+ country code and number" pattern="\+[1-9][0-9]{6,14}" required></label></div>
+        <label>Patient timezone<input name="timezone" value="Asia/Kolkata" required></label>
+        <fieldset><legend>Health metrics <span class="muted">· synthetic data only</span></legend><div id="biomarkers"></div><button class="button subtle" id="add-metric" type="button">+ Add metric</button></fieldset>
+        <label class="checkbox"><input name="recipient_consented" type="checkbox" required><span>The test recipient has agreed to this recorded demonstration call.</span></label>
+        <div class="form-footer"><p class="small muted">One call at a time · Up to 3 minutes</p><button class="button primary" id="start-call" type="submit" disabled>Start test call <span aria-hidden="true">↗</span></button></div>
+      </form>
+    </section>
+    <aside class="stack">
+      <section class="card setup-card"><span class="mini-label">BEFORE YOU CALL</span><h2>Service readiness</h2><div id="service-readiness" aria-live="polite">Checking configuration…</div><p class="small muted">A configured service still needs a successful connection test.</p></section>
+      <section class="card accent-card"><span class="mini-label">ONE COMPLETE RECORD</span><h2>From call to clarity.</h2><p>Every completed conversation brings together its transcript, booking result, recording, and independent evaluation.</p><div class="flow-pills"><span>Conversation</span><span>Booking</span><span>Opik</span></div></section>
+    </aside>
+  </div>
+  <section class="card history-card"><div class="card-heading row-between"><div><span class="mini-label">CALL HISTORY</span><h2>Recent conversations</h2></div><button class="button subtle" id="refresh-calls" type="button">Refresh</button></div><div id="call-list" aria-live="polite">Loading calls…</div></section>
+</div>
+{% endblock %}

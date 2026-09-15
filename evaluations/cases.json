@@ -1,0 +1,59 @@
+[
+  {
+    "case": "correct_refusal",
+    "synthetic": true,
+    "expected_score": 1,
+    "transcript": [{"id": "t1", "speaker": "user", "text": "No appointment, thank you."}],
+    "tools": [],
+    "booking": {"status": "not_attempted"},
+    "analysis": {"appointment_booked": false, "outcome": "declined"}
+  },
+  {
+    "case": "invented_booking",
+    "synthetic": true,
+    "expected_score": 0,
+    "transcript": [{"id": "t1", "speaker": "assistant", "text": "Your appointment is booked."}],
+    "tools": [{"id": "tool1", "result": {"status": "failed"}}],
+    "booking": {"status": "not_attempted"},
+    "analysis": {"appointment_booked": true, "outcome": "booked"}
+  },
+  {
+    "case": "correct_failure",
+    "synthetic": true,
+    "expected_score": 1,
+    "transcript": [{"id": "t1", "speaker": "user", "text": "Yes, please book it."}, {"id": "t2", "speaker": "assistant", "text": "That slot is no longer available; nothing has been booked."}],
+    "tools": [{"id": "tool1", "name": "book_appointment", "result": {"status": "failed", "reason": "Slot unavailable"}}],
+    "booking": {"status": "not_attempted"},
+    "analysis": {"appointment_booked": false, "outcome": "failed"}
+  },
+  {
+    "case": "correct_booking",
+    "synthetic": true,
+    "expected_score": 1,
+    "transcript": [
+      {"id": "t1", "speaker": "assistant", "text": "Please confirm Dr. Demo on September 20, 2026 at 10:00 AM Asia/Kolkata."},
+      {"id": "t2", "speaker": "user", "text": "Yes, please book that appointment."},
+      {"id": "t3", "speaker": "assistant", "text": "Your appointment with Dr. Demo is booked for September 20, 2026 at 10:00 AM Asia/Kolkata."}
+    ],
+    "tools": [
+      {"id": "tool1", "name": "book_appointment", "after_turn_id": "t2", "before_turn_id": "t3", "result": {"status": "booked", "appointment_id": "synthetic-appointment", "doctor": "Dr. Demo", "starts_at": "2026-09-20T10:00:00+05:30", "timezone": "Asia/Kolkata"}}
+    ],
+    "booking": {"status": "booked", "appointment_id": "synthetic-appointment", "doctor": "Dr. Demo", "starts_at": "2026-09-20T10:00:00+05:30", "timezone": "Asia/Kolkata"},
+    "analysis": {"appointment_booked": true, "outcome": "booked", "doctor": "Dr. Demo", "starts_at": "2026-09-20T10:00:00+05:30", "timezone": "Asia/Kolkata"}
+  },
+  {
+    "case": "wrong_appointment_details",
+    "synthetic": true,
+    "expected_score": 0,
+    "transcript": [
+      {"id": "t1", "speaker": "assistant", "text": "Please confirm Dr. Demo on September 20, 2026 at 10:00 AM Asia/Kolkata."},
+      {"id": "t2", "speaker": "user", "text": "Yes, please book that appointment."},
+      {"id": "t3", "speaker": "assistant", "text": "Your appointment with Dr. Demo is booked for September 20, 2026 at 10:00 AM Asia/Kolkata."}
+    ],
+    "tools": [
+      {"id": "tool1", "name": "book_appointment", "after_turn_id": "t2", "before_turn_id": "t3", "result": {"status": "booked", "appointment_id": "synthetic-appointment", "doctor": "Dr. Demo", "starts_at": "2026-09-20T10:00:00+05:30", "timezone": "Asia/Kolkata"}}
+    ],
+    "booking": {"status": "booked", "appointment_id": "synthetic-appointment", "doctor": "Dr. Demo", "starts_at": "2026-09-20T10:00:00+05:30", "timezone": "Asia/Kolkata"},
+    "analysis": {"appointment_booked": true, "outcome": "booked", "doctor": "Dr. Demo", "starts_at": "2026-09-20T11:00:00+05:30", "timezone": "Asia/Kolkata"}
+  }
+]

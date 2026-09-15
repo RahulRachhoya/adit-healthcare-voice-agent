@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "call_id": "00000000-0000-4000-8000-000000000001",
+  "started_at": "2026-09-14T10:00:00+00:00",
+  "ended_at": "2026-09-14T10:01:00+00:00",
+  "call_status": "completed",
+  "metadata": {"synthetic_fixture": true, "finalized_at": "2026-09-14T10:01:05+00:00"},
+  "variables": {"name": "Alex Synthetic", "timezone": "Asia/Kolkata", "biomarkers": []},
+  "transcript": [
+    {"id": "t1", "speaker": "assistant", "text": "Would you like a simulated consultation?", "timestamp": "2026-09-14T10:00:10+00:00"},
+    {"id": "t2", "speaker": "user", "text": "No appointment, thank you.", "timestamp": "2026-09-14T10:00:15+00:00"}
+  ],
+  "tool_events": [],
+  "booking": {"status": "not_attempted", "appointment_id": null, "slot": null, "reason": ""},
+  "recording": {
+    "status": "ready",
+    "storage_endpoint": "https://storage.example.invalid",
+    "bucket": "synthetic-call-recordings",
+    "object_key": "synthetic/example.ogg",
+    "playback_page": "https://example.invalid/synthetic-only"
+  },
+  "analysis": {
+    "summary": "Synthetic fixture: the recipient declined a consultation.",
+    "patient_reached": true,
+    "metrics_discussed": [],
+    "consultation_offered": true,
+    "appointment_booked": false,
+    "appointment_details": null,
+    "outcome": "declined",
+    "outcome_reason": "The recipient declined.",
+    "follow_up_needed": false,
+    "evidence": ["t2"]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "synthetic": true,
+  "timezone": "Asia/Kolkata",
+  "slots": [
+    {"doctor": "Dr. Taylor (demo)", "days_from_today": 1, "hour": 10, "minute": 0},
+    {"doctor": "Dr. Taylor (demo)", "days_from_today": 1, "hour": 14, "minute": 30},
+    {"doctor": "Dr. Jordan (demo)", "days_from_today": 2, "hour": 11, "minute": 0}
+  ]
+}
