@@ -5,9 +5,20 @@ import json
 import logging
 from datetime import UTC, datetime
 
+from google.genai import types
 from google.protobuf.duration_pb2 import Duration
 from livekit import api
-from livekit.agents import AgentServer, AgentSession, JobContext, cli, inference, room_io
+from livekit.agents import (
+    AgentServer,
+    AgentSession,
+    APIConnectOptions,
+    JobContext,
+    cli,
+    inference,
+    llm,
+    room_io,
+)
+from livekit.agents.voice.agent_session import SessionConnectOptions
 from livekit.plugins import google, silero
 
 from adit_voice_agent.agent.evidence import history_evidence
@@ -27,6 +38,37 @@ server = AgentServer(
     api_key=settings.livekit_api_key.get_secret_value() or None,
     api_secret=settings.livekit_api_secret.get_secret_value() or None,
 )
+
+
+class VoiceModelUnavailable(RuntimeError):
+    """The model could not respond before a telephone call was attempted."""
+
+
+def model_failure_reason(exc: Exception) -> str:
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if getattr(exc, "status_code", None) == 429 or getattr(exc, "code", None) == 429:
+            return "Conversation model quota exhausted (429). The voice conversation could not continue."
+        exc = exc.__cause__ or exc.__context__
+    return "The conversation model was unavailable. The voice conversation could not continue."
+
+
+async def verify_voice_model(model):
+    """Check usable model capacity before spending telephone or recording credit."""
+    context = llm.ChatContext()
+    context.add_message(role="user", content="Reply with READY only.")
+    try:
+        async with asyncio.timeout(10):
+            async with model.chat(
+                chat_ctx=context, conn_options=APIConnectOptions(max_retry=0, timeout=8),
+            ) as stream:
+                async for chunk in stream:
+                    if chunk.delta and chunk.delta.content and chunk.delta.content.strip():
+                        return
+        raise RuntimeError("The model returned no text.")
+    except Exception as exc:
+        raise VoiceModelUnavailable(model_failure_reason(exc)) from exc
 
 
 async def after_session(ctx: JobContext):
@@ -66,6 +108,7 @@ async def entrypoint(ctx: JobContext):
     outcome = "failed"
     error = None
     session = None
+    voice_model = None
 
     def enqueue(field, event):
         task = asyncio.create_task(asyncio.to_thread(calls.append_event, call_id, field, event))
@@ -82,13 +125,21 @@ async def entrypoint(ctx: JobContext):
     try:
         if not settings.readiness()["calls_enabled"] or call.input_data["phone"] not in settings.destinations:
             raise RuntimeError("Agent preflight incomplete or destination not approved")
+        voice_model = google.LLM(
+            model=settings.gemini_model, api_key=settings.google_api_key.get_secret_value(),
+            thinking_config={"thinking_level": "minimal"},
+            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(disable=True),
+            http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1)),
+        )
+        await verify_voice_model(voice_model)
         session = AgentSession(
             stt=inference.STT(model=settings.stt_model, language="en",
                               api_key=settings.livekit_api_key.get_secret_value(),
                               api_secret=settings.livekit_api_secret.get_secret_value()),
-            # Let the SDK select minimal thinking for Gemini 3 Flash voice turns.
-            llm=google.LLM(model=settings.gemini_model, api_key=settings.google_api_key.get_secret_value(),
-                           thinking_config={}),
+            llm=voice_model,
+            conn_options=SessionConnectOptions(
+                llm_conn_options=APIConnectOptions(max_retry=1, retry_interval=0.5, timeout=8),
+            ),
             tts=inference.TTS(model=settings.tts_model, voice=settings.tts_voice, language="en",
                               api_key=settings.livekit_api_key.get_secret_value(),
                               api_secret=settings.livekit_api_secret.get_secret_value()),
@@ -115,10 +166,26 @@ async def entrypoint(ctx: JobContext):
             for tool in tools:
                 enqueue("tool_events", tool)
 
+        @session.on("error")
+        def provider_failed(event):
+            nonlocal close_error, error
+            if getattr(event.error, "recoverable", True) or close_error:
+                return
+            close_error = True
+            error = (
+                model_failure_reason(event.error.error)
+                if event.error.type == "llm_error"
+                else "A speech service failed. The voice conversation could not continue."
+            )
+            logger.error("Provider failure for call_id=%s, component=%s", call_id, event.error.type)
+            closed.set()
+
         @session.on("close")
         def session_closed(event):
-            nonlocal close_error
-            close_error = event.error is not None
+            nonlocal close_error, error
+            close_error = close_error or event.error is not None
+            if close_error and not error:
+                error = "The voice session closed because of a provider error."
             closed.set()
 
         await ctx.connect()
@@ -130,6 +197,8 @@ async def entrypoint(ctx: JobContext):
             room=ctx.room,
             room_options=room_io.RoomOptions(participant_identity=identity, close_on_disconnect=True),
         )
+        if close_error:
+            raise RuntimeError("A speech service failed before dialing.")
         if not await asyncio.to_thread(calls.claim_dial, call_id):
             return
         request = api.CreateSIPParticipantRequest(
@@ -155,22 +224,40 @@ async def entrypoint(ctx: JobContext):
             await asyncio.wait_for(closed.wait(), timeout=settings.max_call_seconds)
         except TimeoutError:
             await session.say("We have reached the demonstration time limit. Thank you, and goodbye.")
+        if close_error:
+            try:
+                await asyncio.wait_for(session.say(
+                    "I'm sorry, a technical problem means I cannot continue this call. "
+                    "Please try again later. Goodbye.", allow_interruptions=False,
+                ), timeout=8)
+            except Exception:
+                logger.warning("Could not play the failure notice for call_id=%s", call_id)
         outcome = "failed" if close_error or write_errors else "completed"
         if write_errors:
             error = "Conversation evidence could not be saved completely. Do not treat this call as verified."
     except Exception as exc:
         if isinstance(exc, api.TwirpError) and str((exc.metadata or {}).get("sip_status_code", "")) in {"408", "480", "486", "603"}:
             outcome = "unanswered"
-        error = "The voice session did not complete. Inspect LiveKit/provider logs using the call identity."
+        error = error or (
+            str(exc) if isinstance(exc, VoiceModelUnavailable)
+            else "The voice session did not complete. Inspect LiveKit/provider logs using the call identity."
+        )
         logger.error("Voice session failed for call_id=%s, error_type=%s", call_id, type(exc).__name__)
     finally:
         if session is not None:
             try:
                 await session.aclose()
             except Exception:
-                error = "Voice session shutdown was interrupted. Verify saved evidence."
+                error = error or "Voice session shutdown was interrupted. Verify saved evidence."
+        if voice_model is not None:
+            try:
+                await voice_model.aclose()
+            except Exception:
+                logger.warning("Model connection cleanup failed for call_id=%s", call_id)
         if writes:
             await asyncio.gather(*list(writes), return_exceptions=True)
+        if close_error or write_errors:
+            outcome = "failed"
         try:
             await asyncio.wait_for(calls.gateway.end(call.room_name), timeout=15)
         except Exception:

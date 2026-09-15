@@ -4,6 +4,8 @@ All `/api/*` endpoints require the operator's signed session cookie. Obtain the 
 
 Responses are JSON. Authentication failure returns `401`; CSRF or destination rejection `403`; missing call `404`; conflict `409`; invalid input/key `422`; attempt limit `429`; unavailable setup/provider `503`. Validation errors use FastAPI's `detail` array; service errors use a `detail` string. Public OpenAPI/Swagger routes are disabled.
 
+Call details include `session_error` for a durable conversation failure. `error` displays a current processing error or falls back to that session failure. Completing recording, analysis, or Opik export does not clear `session_error` or turn a failed conversation into a completed one. The Opik report includes the same reason in metadata.
+
 | Method/path | Contract |
 |---|---|
 | `GET /healthz`, `HEAD /healthz` | Public liveness. GET returns `{"status":"ok"}`; HEAD returns HTTP 200 with an empty body for uptime monitors. Does not prove provider or database readiness. |

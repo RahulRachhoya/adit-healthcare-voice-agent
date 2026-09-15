@@ -22,7 +22,7 @@ The login is private. Telephone calls require an explicitly submitted form, reci
 | Access protection | Call API returned HTTP 401 before login and after logout |
 | Session cookie | `Secure`, `HttpOnly`, `SameSite=Strict`, one-hour lifetime |
 | Shared database | Supabase PostgreSQL session pooler; client TLS verified |
-| Database schema | Alembic revision `0003`; migration and drift checks passed |
+| Database schema | Initial revision `0003`; revision `0004` subsequently added durable session-failure reasons, with migration and drift checks passed |
 | Initial cloud data | Three synthetic appointment slots; zero calls and bookings |
 | Voice worker | LiveKit Cloud agent `CA_KoZoY2W4BTpV`, region `ap-south`, status `Running` |
 | Dispatch identity | `adit-healthcare-cloud`; separate from the local worker |
@@ -33,6 +33,12 @@ The login is private. Telephone calls require an explicitly submitted form, reci
 The initial GitHub checks are recorded in [run 35009225565](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/runs/35009225565). Workflow pages above show subsequent runs and their exact source commits.
 
 The shared database starts fresh. Historical local calls, private reports, and audio were not copied into the public repository or presented as new hosted evidence.
+
+## Subsequent hosted-call failure
+
+The owner's hosted test reached the recipient and captured the greeting and spoken consent, but the conversation model returned HTTP 429 after exhausting the `gemini-3.6-flash` free daily limit of 20 requests. The recording and analysis completed; no appointment was offered or booked. Successful post-call processing did not make the conversation successful.
+
+The repair selects `gemini-3.5-flash-lite`, checks model capacity before dialing, handles unrecoverable session errors with a spoken failure notice, and stores `session_error` separately from processing errors. Flash-Lite passed a real text-only response and appointment-slot tool check. No replacement telephone call was placed during this repair.
 
 ## Remaining live verification
 

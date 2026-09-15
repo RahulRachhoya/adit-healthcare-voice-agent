@@ -57,6 +57,25 @@ async def test_pending_recording_does_not_become_success(calls, sessions, settin
     assert fakes.adapter.reports == []
 
 
+async def test_voice_failure_survives_analysis_retry_and_successful_export(calls, sessions, settings, active_call, fakes):
+    reason = "Conversation model quota exhausted (429)."
+    calls.finish(active_call, "failed", reason)
+    fakes.analyzer.fail = True
+    process = processor(sessions, settings, fakes)
+    await process.process(active_call)
+    assert calls.raw(active_call).session_error == reason
+    assert calls.raw(active_call).analysis_status == "failed"
+
+    fakes.analyzer.fail = False
+    await process.process(active_call)
+    saved = calls.raw(active_call)
+    assert saved.status == "failed" and saved.finalization_status == "complete"
+    assert saved.error is None and saved.session_error == reason
+    assert calls.detail(active_call)["error"] == reason
+    assert fakes.adapter.reports[-1]["call_status"] == "failed"
+    assert fakes.adapter.reports[-1]["metadata"]["session_error"] == reason
+
+
 async def test_analysis_outage_preserves_transcript(calls, sessions, settings, active_call, fakes):
     calls.finish(active_call, "completed")
     fakes.analyzer.fail = True

@@ -26,7 +26,7 @@ W = web, A = agent/finalizer, C = operator CLI.
 | `LIVEKIT_SIP_TRUNK_ID` | W/A | No | LiveKit outbound SIP trunk ID; not a Plivo account ID |
 | `LIVEKIT_DESTINATION_COUNTRY` | A | No | Optional provider-supported country value for regional routing; verify LiveKit and the selected SIP provider's requirements |
 | `GOOGLE_API_KEY` | A/C | **Yes** | Gemini dialogue and structured analysis |
-| `GEMINI_MODEL` | A/C | No | Voice model; verified `gemini-3.6-flash` |
+| `GEMINI_MODEL` | A/C | No | Voice model; current default `gemini-3.5-flash-lite`, verified with streaming and a scheduling-tool response |
 | `GEMINI_ANALYSIS_MODEL` | A/C | No | Optional separate analysis model; verified `gemini-3.5-flash-lite`. Empty falls back to `GEMINI_MODEL` |
 | `STT_MODEL` | A | No | Default `deepgram/nova-3` through LiveKit Inference |
 | `TTS_MODEL` | A | No | Default `cartesia/sonic-3` through LiveKit Inference |
@@ -59,7 +59,11 @@ provisioning fields.
 
 `live_test_verified` is deliberately false in readiness: it is not an automated provider test. Record observed live results in a dated evidence record instead of turning configuration presence into proof.
 
-On September 15, 2026, the Google API rejected `gemini-2.5-flash` for this key because it is no longer available to new users and recommended `gemini-3.6-flash`. The replacement passed actual streaming/tool and structured-analysis checks. The voice worker requests the SDK's default thinking configuration, which selects `minimal` for Gemini 3 Flash. Post-call analysis supplies `Analysis.model_json_schema()` through `response_json_schema`; the legacy schema field rejected `additionalProperties`.
+On September 15, 2026, the Google API rejected `gemini-2.5-flash` for this key and recommended `gemini-3.6-flash`. That model initially passed streaming/tool checks, but a later hosted call exhausted its account-specific free daily limit of 20 requests. The voice default is now `gemini-3.5-flash-lite`, which was already used for analysis and passed a live text-only scheduling-tool check.
+
+The worker explicitly requests minimal thinking and disables the Google SDK's automatic function execution because LiveKit owns tool execution. A brief model request runs before recording and dialing, with a ten-second overall deadline. This consumes model quota but avoids dialing when model capacity is already unavailable. In-call LLM requests allow one retry with an eight-second request timeout. An unrecoverable provider error ends the call as failed, with a bounded attempt to speak a technical-failure notice through TTS.
+
+Post-call analysis supplies `Analysis.model_json_schema()` through `response_json_schema`; the legacy schema field rejected `additionalProperties`. Model quotas remain provider-controlled. Changing an API key in the same Google project does not create a new quota allocation.
 
 The real call later exposed 3.6 Flash rate-limit/availability failures. Its saved
 conversation was successfully analyzed by 3.5 Flash-Lite. Analysis now requests

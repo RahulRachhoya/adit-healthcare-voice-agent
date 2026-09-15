@@ -49,6 +49,7 @@ class Call(Base):
     evaluation: Mapped[dict] = mapped_column(JSON, default=dict)
     evaluation_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error: Mapped[str | None] = mapped_column(Text)
+    session_error: Mapped[str | None] = mapped_column(Text)
 
 
 class Slot(Base):

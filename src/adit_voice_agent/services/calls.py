@@ -184,6 +184,8 @@ class CallService:
                 call.ended_at = utcnow()
             if error:
                 call.error = error
+                if status == "failed":
+                    call.session_error = error
             if control and control.active_call_id == call_id:
                 control.active_call_id = None
 
@@ -212,7 +214,8 @@ class CallService:
             "recording": {"status": call.recording.get("status", "pending")},
             "analysis": call.analysis, "analysis_status": call.analysis_status,
             "finalization_status": call.finalization_status, "export_status": call.export_status,
-            "trace_url": call.trace_url, "evaluation": call.evaluation, "error": call.error,
+            "trace_url": call.trace_url, "evaluation": call.evaluation,
+            "error": call.error or call.session_error, "session_error": call.session_error,
         }
 
     def listing(self):

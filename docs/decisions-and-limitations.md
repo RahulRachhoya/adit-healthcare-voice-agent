@@ -42,7 +42,7 @@
 - Analysis validates booking facts and reference IDs. It does not deterministically validate every natural-language sentence; the online rubric and reviewer cover that gap.
 - Opik/LLM and transcript errors must remain visible. One real completed call and five synthetic judge cases passed; this does not establish general reliability across all conversations.
 - The historical local call's audio link to `127.0.0.1` requires the local app. New hosted calls use the public app address with authenticated, temporary playback URLs. The stored endpoint/bucket/key remains the permanent audio reference.
-- Public reviewer hosting is running on Render Free, LiveKit Cloud Build, and Supabase Free. Login, protected APIs, database access, and the registered cloud worker are verified; a hosted telephone call has not been placed. Sleep, quota, and inactivity limits apply; see [deployment evidence](deployment-evidence.md) and [deployment.md](deployment.md).
+- Public reviewer hosting is running on Render Free, LiveKit Cloud Build, and Supabase Free. Login, protected APIs, database access, and the registered cloud worker are verified. A hosted test reached the recipient but its conversation failed on the former model's daily quota; a successful hosted workflow remains to be demonstrated. Sleep, quota, and inactivity limits apply; see [deployment evidence](deployment-evidence.md) and [deployment.md](deployment.md).
 
 ## Remaining completion checklist
 

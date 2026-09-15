@@ -16,7 +16,7 @@ An outbound healthcare voice agent using **LiveKit Agents and Python**. The dash
 
 The dashboard runs on Render Free, the voice worker on LiveKit Cloud, and the shared database on Supabase Free. Reviewer login credentials are shared privately. Calls require the operator login, an approved recipient, and explicit form submission. No call starts merely by opening the site.
 
-Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository. Hosted login, protected API access, database access, and worker registration are verified; the recorded telephone evidence below is from the local deployment. A new call from the hosted dashboard has not been placed.
+Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository. Hosted login, protected API access, database access, and worker registration are verified. A later hosted test reached the recipient but stopped after the greeting when the former voice model exhausted its free daily quota. The repair changes the voice model, checks model capacity before dialing, and preserves provider failures in the call report. A fully successful hosted workflow still needs a new demonstration; the complete telephone evidence below is from the local deployment.
 
 ## Implementation status
 

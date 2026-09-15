@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     livekit_sip_trunk_id: str = ""
     livekit_destination_country: str = ""
     google_api_key: SecretStr = SecretStr("")
-    gemini_model: str = "gemini-3.6-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"
     gemini_analysis_model: str = ""
     stt_model: str = "deepgram/nova-3"
     tts_model: str = "cartesia/sonic-3"

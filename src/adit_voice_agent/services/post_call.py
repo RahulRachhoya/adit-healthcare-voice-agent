@@ -101,8 +101,8 @@ class PostCallProcessor:
                 recording = {**call.recording, "status": "pending", "error": "Recording completion could not be confirmed."}
             await asyncio.to_thread(self.calls.update, call_id, recording=recording)
             booking = await asyncio.to_thread(self.bookings.result, call_id)
-            payload = {"call_status": call.status, "transcript": call.transcript,
-                       "tool_events": call.tool_events, "booking": booking}
+            payload = {"call_status": call.status, "session_error": call.session_error,
+                       "transcript": call.transcript, "tool_events": call.tool_events, "booking": booking}
             prior_timing = (call.report or {}).get("metadata", {}).get("analysis_timing", {})
             analysis_start = prior_timing.get("started_at") or utcnow().isoformat()
             if call.analysis is not None and call.analysis_status == "ready":
@@ -138,6 +138,7 @@ class PostCallProcessor:
                 call_id=call.id, started_at=started, ended_at=ended, call_status=call.status,
                 metadata={"room_name": call.room_name, "dispatch_id": call.dispatch_id,
                           "synthetic_health_data": True, "finalized_at": utcnow().isoformat(),
+                          "session_error": call.session_error,
                           "analysis_timing": {"started_at": analysis_start, "ended_at": analysis_end,
                                               "model": self.settings.analysis_model}},
                 variables=variables, transcript=call.transcript, tool_events=call.tool_events,

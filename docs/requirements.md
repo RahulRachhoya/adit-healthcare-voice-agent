@@ -29,4 +29,4 @@ Login, recipient restrictions, time/attempt limits, saved booking records, retri
 
 The implemented telephone workflow and its required evidence are verified.
 See [the actual call](call-evidence.md) for identifiers, recording and automatic
-score. Present the complete workflow and implementation explanation to the reviewer using the [demo guide](demo-guide.md); a separate narrated video is optional. The additional hosted infrastructure is documented in [deployment evidence](deployment-evidence.md). A hosted telephone call has not been verified, and the cloud database does not contain the historical local call.
+score. Present the complete workflow and implementation explanation to the reviewer using the [demo guide](demo-guide.md); a separate narrated video is optional. The additional hosted infrastructure is documented in [deployment evidence](deployment-evidence.md). A hosted test reached the recipient but failed after the greeting because the former voice model exhausted its daily quota. A fully successful hosted workflow has not yet been verified, and the cloud database does not contain the historical local call.

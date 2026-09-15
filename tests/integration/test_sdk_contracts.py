@@ -74,8 +74,8 @@ def test_transcript_and_tool_output_fields_exist():
 
 
 @pytest.mark.parametrize("analysis_model,expected_model", [
-    ("", "gemini-3.6-flash"),
-    ("gemini-3.5-flash-lite", "gemini-3.5-flash-lite"),
+    ("", "gemini-3.5-flash-lite"),
+    ("gemini-3.6-flash", "gemini-3.6-flash"),
 ])
 async def test_gemini_analysis_uses_supported_json_schema(settings, monkeypatch, analysis_model, expected_model):
     """Exercise model selection and the real SDK serializer without network calls."""
@@ -87,7 +87,7 @@ async def test_gemini_analysis_uses_supported_json_schema(settings, monkeypatch,
 
     def respond(request):
         assert request.url.path.endswith(f"/models/{expected_model}:generateContent")
-        assert settings.gemini_model == "gemini-3.6-flash"
+        assert settings.gemini_model == "gemini-3.5-flash-lite"
         body = json.loads(request.content)
         requests.append(body)
         config = body["generationConfig"]
