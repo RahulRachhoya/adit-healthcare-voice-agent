@@ -48,14 +48,19 @@ flowchart TD
 5. Dial via the configured SIP trunk. LiveKit binds the agent to the expected recipient identity.
 6. Introduce the AI, disclose recording, confirm identity and willingness, relay only supplied values, and offer consultation.
 7. Fetch slots, repeat the chosen local time and timezone, ask for an explicit “yes”, then execute the booking tool.
-8. Save conversation and tool events as they arrive. On shutdown, reconstruct the transcript from final session history; interrupted speech remains marked.
+8. On a saved successful booking, the tool speaks the authoritative details and farewell without interruption, waits for playback, suppresses any additional model reply, and requests session shutdown. The worker then deletes the telephone room. Failed bookings keep the conversation open. Save events as they arrive; on shutdown, reconstruct final history with interrupted speech marked.
 9. Confirm room termination before releasing the active-call reservation. Finalization runs after the voice session.
 10. Resolve and persist private recording completion, generate analysis and validate it against the saved booking, save the report, export and read back Opik, then poll its evaluation.
 
-Voice and analysis use separately configurable Gemini models. The verified
-configuration uses 3.6 Flash for voice and 3.5 Flash-Lite for analysis. A model
-outage leaves the recording playable and the saved conversation available for
-the existing retry command.
+Voice and analysis use separately configurable Gemini models with Groq fallback;
+see [model fallback](model-fallback.md). An outage leaves the saved conversation
+and any completed recording available for the existing retry command.
+
+Availability prepares three persisted options 4, 8 and 12 days ahead in the clinic
+timezone. Only the current options that are unbooked and still in the future are
+offered. Old rows stay unchanged for booking and call evidence. Offers, saved
+booking responses and spoken confirmations all convert the same UTC instant into
+the patient's selected timezone. See [appointments](appointments.md).
 
 ## Database and consistency
 

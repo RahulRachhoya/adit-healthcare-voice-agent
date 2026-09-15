@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 
 from adit_voice_agent.db.models import utcnow
 from adit_voice_agent.schemas import PatientInput
+from adit_voice_agent.timezones import TIMEZONE_LABELS
 from adit_voice_agent.web.auth import (
     csrf_token,
     password_matches,
@@ -73,7 +74,7 @@ async def logout(request: Request):
 async def dashboard(request: Request):
     if request.session.get("operator") != request.app.state.settings.admin_username:
         return RedirectResponse("/login", status_code=303)
-    return render(request, "dashboard.html")
+    return render(request, "dashboard.html", timezones=TIMEZONE_LABELS)
 
 
 @router.get("/calls/{call_id}", dependencies=[Depends(require_operator)])

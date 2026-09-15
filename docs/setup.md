@@ -38,7 +38,7 @@ uv run adit-seed
 uv run adit-check --database
 ```
 
-Seeding adds explicitly synthetic future appointments; it does not create calls. Re-running it preserves existing slots. Run it again before a later demonstration so slots are still in the future.
+Seeding prepares the current synthetic schedule without creating calls. The agent also refreshes it automatically whenever it fetches availability, so later demonstrations need no manual reseeding. The packaged definition in `src/adit_voice_agent/data/appointment_slots.json` uses dates 4, 8 and 12 days ahead in the clinic timezone. Previously offered rows and booked appointments keep their original names and times. See [appointments](appointments.md).
 
 The supplied migration turns on PostgreSQL row-level security with no public policies. The local application uses the database owner created by Compose.
 

@@ -8,7 +8,12 @@
       <div class="card-heading row-between"><div><span class="mini-label">START HERE</span><h2>New test call</h2></div><span class="round-icon" aria-hidden="true">↗</span></div>
       <form id="call-form" class="stack">
         <div class="two-columns"><label>Patient name<input name="name" placeholder="Alex Morgan" required maxlength="100"></label><label>Approved phone number<input name="phone" type="tel" placeholder="+ country code and number" pattern="\+[1-9][0-9]{6,14}" required></label></div>
-        <label>Patient timezone<input name="timezone" value="Asia/Kolkata" required></label>
+        <label for="patient-timezone">Patient location / timezone
+          <select id="patient-timezone" name="timezone" aria-describedby="timezone-help" required>
+            {% for zone, label in timezones.items() %}<option value="{{ zone }}"{% if zone == 'Asia/Kolkata' %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <span id="timezone-help" class="small muted">Appointment times are offered and confirmed in the patient's local time. Choose where they will attend.</span>
+        </label>
         <fieldset><legend>Health metrics <span class="muted">· synthetic data only</span></legend><div id="biomarkers"></div><button class="button subtle" id="add-metric" type="button">+ Add metric</button></fieldset>
         <label class="checkbox"><input name="recipient_consented" type="checkbox" required><span>The test recipient has agreed to this recorded demonstration call.</span></label>
         <div class="form-footer"><p class="small muted">One call at a time · Up to 3 minutes</p><button class="button primary" id="start-call" type="submit" disabled>Start test call <span aria-hidden="true">↗</span></button></div>

@@ -16,7 +16,7 @@ An outbound healthcare voice agent using **LiveKit Agents and Python**. The dash
 
 The dashboard runs on Render Free, the voice worker on LiveKit Cloud, and the shared database on Supabase Free. Reviewer login credentials are shared privately. Calls require the operator login, an approved recipient, and explicit form submission. No call starts merely by opening the site.
 
-Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository. Hosted login, protected API access, database access, and worker registration are verified. A later hosted test reached the recipient but stopped after the greeting when the former voice model exhausted its free daily quota. The repair changes the voice model, checks model capacity before dialing, and preserves provider failures in the call report. A fully successful hosted workflow still needs a new demonstration; the complete telephone evidence below is from the local deployment.
+Real recipient information, recordings, API keys, local environments, and private reports are excluded from this repository. Hosted login, protected API access, database access, and worker registration are verified. A later hosted test reached the recipient but stopped after the greeting when the former voice model exhausted its free daily quota. The repair changes the voice model, checks model capacity before dialing, and preserves provider failures in the call report. A subsequent hosted call completed with a saved booking, ready recording and analysis, and completed Opik evaluation. Its transcript exposed the doctor-label and missing-hangup issues addressed in [appointment behavior](docs/appointments.md). The revised farewell and disconnection still need a fresh recipient-observed test; the original complete call evidence below remains unchanged.
 
 ## Implementation status
 
@@ -33,7 +33,7 @@ Real recipient information, recordings, API keys, local environments, and privat
 
 The real call used trial credit with no payment. It encountered model rate limits, and analysis was recovered from saved evidence using the retry command. A final reviewer demonstration remains to be presented; the PDF does not prescribe a narrated-video format. See [limitations](docs/decisions-and-limitations.md).
 
-Calls currently start immediately. Future telephone scheduling and additional latency improvements discussed during review are not implemented. Simulated doctor-appointment booking is implemented.
+Calls currently start immediately. Future telephone scheduling is not implemented. Doctor-appointment availability refreshes automatically to dates 4, 8 and 12 days ahead, with distinct fictional doctor names. The location dropdown controls appointment times; India is the default. A successful booking speaks the saved confirmation and farewell, then disconnects after playback. See [appointment behavior and verification](docs/appointments.md).
 
 ## Architecture and stack
 
@@ -84,7 +84,8 @@ GitHub Pages serves static sites; it cannot run this Python application. GitHub 
 ├── render.yaml                # Free dashboard blueprint; no credentials
 ├── alembic.ini
 ├── src/adit_voice_agent/
-│   ├── config.py, schemas.py, cli.py
+│   ├── config.py, schemas.py, cli.py, timezones.py
+│   ├── data/                  # Rolling synthetic appointment definition
 │   ├── agent/                 # Voice lifecycle, tools, transcript conversion
 │   ├── services/              # Calls, booking, recording, post-call processing
 │   ├── integrations/          # Standalone opik_integration.py
@@ -147,7 +148,7 @@ uv run adit-configure-evaluation
 
 Save its returned ID as `OPIK_RULE_ID`. Verify available trial credit and the consenting recipient, then set `FREE_TRIAL_VERIFIED=true`, `LIVE_CALLS_ENABLED=true`, and the private `ALLOWED_PHONE_NUMBERS` in both services.
 
-1. Enter synthetic patient information in the dashboard and review the metric values and dates.
+1. Enter synthetic patient information, choose the patient's location/timezone, and review the metric values and dates.
 2. Enter an approved, consenting recipient's full international number.
 3. Start the call, answer the telephone, and accept or decline the simulated consultation.
 4. Review the saved outcome, transcript, tool results, recording, and analysis.

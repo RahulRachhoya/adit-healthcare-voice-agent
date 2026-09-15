@@ -188,7 +188,7 @@ async def entrypoint(ctx: JobContext):
         await asyncio.to_thread(calls.update, call_id, recording=rec)
         identity = f"recipient-{call_id}"
         await session.start(
-            agent=HealthcareAgent(call.input_data, AppointmentTools(sessions, calls, call_id), writes, closed.set),
+            agent=HealthcareAgent(call.input_data, AppointmentTools(sessions, calls, call_id), writes),
             room=ctx.room,
             room_options=room_io.RoomOptions(participant_identity=identity, close_on_disconnect=True),
         )

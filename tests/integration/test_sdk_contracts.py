@@ -20,7 +20,7 @@ from adit_voice_agent.services.post_call import PostCallAnalyzer
 def test_agent_tools_register_with_livekit():
     agent = HealthcareAgent(
         {"name": "Synthetic", "phone": "+12025550123", "biomarkers": []},
-        SimpleNamespace(), set(), lambda: None,
+        SimpleNamespace(), set(),
     )
     assert agent is not None
     assert "+12025550123" not in agent.instructions

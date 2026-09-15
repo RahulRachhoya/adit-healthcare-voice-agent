@@ -1,0 +1,9 @@
+{
+  "synthetic": true,
+  "timezone": "Asia/Kolkata",
+  "slots": [
+    {"doctor": "Dr. Meera Shah", "days_from_today": 4, "hour": 10, "minute": 0},
+    {"doctor": "Dr. Arjun Rao", "days_from_today": 8, "hour": 14, "minute": 30},
+    {"doctor": "Dr. Kavya Menon", "days_from_today": 12, "hour": 11, "minute": 0}
+  ]
+}

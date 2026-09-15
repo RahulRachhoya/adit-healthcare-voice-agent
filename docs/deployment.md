@@ -26,7 +26,7 @@ Do not add a card, upgrade, enable automatic top-up, or intentionally consume pa
 flowchart LR
   GitHub[Public GitHub repository] --> CI[GitHub Actions checks]
   CI --> Render[Render FastAPI dashboard]
-  GitHub --> Deploy[Manual agent deploy workflow]
+  CI --> Deploy[Automatic agent deploy on main]
   Deploy --> LiveKit[LiveKit Cloud worker]
   Render --> DB[(Supabase PostgreSQL)]
   LiveKit --> DB

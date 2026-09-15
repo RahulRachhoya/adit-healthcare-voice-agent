@@ -14,10 +14,10 @@ class AppointmentTools:
 
     async def run(self, tool_id, name, arguments):
         started = utcnow().isoformat()
+        call = await asyncio.to_thread(self.calls.raw, self.call_id)
         if name == "get_available_slots":
-            result = await asyncio.to_thread(self.bookings.available)
+            result = await asyncio.to_thread(self.bookings.available, call.input_data.get("timezone"))
         elif name == "book_appointment":
-            call = await asyncio.to_thread(self.calls.raw, self.call_id)
             latest_user = next((t for t in reversed(call.transcript) if t["speaker"] == "user"), None)
             evidence = latest_user["id"] if latest_user else ""
             arguments = {**arguments, "evidence_turn_id": evidence}

@@ -54,6 +54,16 @@ def test_postgres_slot_race_has_one_winner(pg_sessions, patient):
         assert len(db.scalars(select(Booking)).all()) == 1
 
 
+def test_postgres_concurrent_availability_does_not_duplicate_slots(pg_sessions):
+    service = BookingService(pg_sessions)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first, second = list(pool.map(lambda _: service.available(), range(2)))
+    assert first == second
+    assert len(first["slots"]) == 3
+    with pg_sessions() as db:
+        assert len(db.scalars(select(Slot)).all()) == 4  # Three generated plus the fixture.
+
+
 def test_postgres_duplicate_admission_is_atomic(pg_sessions, settings, patient, gateway):
     service = CallService(pg_sessions, settings, gateway)
     with ThreadPoolExecutor(max_workers=2) as pool:

@@ -8,19 +8,21 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from adit_voice_agent.db.models import Booking, Call, Slot, utcnow
+from adit_voice_agent.services.availability import ensure_upcoming_slots
 
 
-def slot_dict(slot: Slot) -> dict:
+def slot_dict(slot: Slot, timezone: str | None = None) -> dict:
     start = slot.starts_at
     if start.tzinfo is None:
         start = start.replace(tzinfo=UTC)
+    timezone = timezone or slot.timezone
     return {"id": slot.id, "doctor": slot.doctor, "starts_at": start.isoformat(),
-            "local_time": start.astimezone(ZoneInfo(slot.timezone)).isoformat(),
-            "timezone": slot.timezone}
+            "local_time": start.astimezone(ZoneInfo(timezone)).isoformat(),
+            "timezone": timezone}
 
 
-def booking_dict(booking: Booking, slot: Slot) -> dict:
-    return {"status": "booked", "appointment_id": booking.id, "slot": slot_dict(slot),
+def booking_dict(booking: Booking, slot: Slot, timezone: str | None = None) -> dict:
+    return {"status": "booked", "appointment_id": booking.id, "slot": slot_dict(slot, timezone),
             "confirmation_evidence": booking.confirmation_evidence, "reason": ""}
 
 
@@ -28,20 +30,22 @@ class BookingService:
     def __init__(self, sessions):
         self.sessions = sessions
 
-    def available(self) -> dict:
-        with self.sessions() as db:
+    def available(self, timezone: str | None = None) -> dict:
+        with self.sessions.begin() as db:
+            current_slots = ensure_upcoming_slots(db)
             occupied = select(Booking.slot_id)
             slots = db.scalars(select(Slot).where(
-                Slot.starts_at > utcnow(), Slot.id.not_in(occupied)
-            ).order_by(Slot.starts_at).limit(6)).all()
-            return {"slots": [slot_dict(slot) for slot in slots], "simulated": True}
+                Slot.id.in_(current_slots), Slot.starts_at > utcnow(), Slot.id.not_in(occupied)
+            ).order_by(Slot.starts_at)).all()
+            return {"slots": [slot_dict(slot, timezone) for slot in slots], "simulated": True}
 
     def result(self, call_id: str) -> dict:
         with self.sessions() as db:
             booking = db.scalar(select(Booking).where(Booking.call_id == call_id))
             if not booking:
                 return {"status": "not_attempted", "appointment_id": None, "slot": None, "reason": ""}
-            return booking_dict(booking, db.get(Slot, booking.slot_id))
+            call = db.get(Call, call_id)
+            return booking_dict(booking, db.get(Slot, booking.slot_id), call.input_data.get("timezone"))
 
     def book(self, call_id: str, slot_id: str, confirmed: bool, evidence_turn_id: str) -> dict:
         def failure(reason):
@@ -54,7 +58,7 @@ class BookingService:
                     return failure("Unknown call.")
                 existing = db.scalar(select(Booking).where(Booking.call_id == call_id))
                 if existing:
-                    return booking_dict(existing, db.get(Slot, existing.slot_id))
+                    return booking_dict(existing, db.get(Slot, existing.slot_id), call.input_data.get("timezone"))
                 if call.status != "active":
                     return failure("The call is no longer active.")
                 evidence = next((t for t in call.transcript
@@ -82,7 +86,7 @@ class BookingService:
                                   confirmation_evidence=evidence_turn_id)
                 db.add(booking)
                 db.flush()
-                return booking_dict(booking, slot)
+                return booking_dict(booking, slot, call.input_data.get("timezone"))
         except IntegrityError:
             # A concurrent writer may have booked either this call or this slot.
             existing = self.result(call_id)

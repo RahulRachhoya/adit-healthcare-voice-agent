@@ -66,6 +66,20 @@ def test_login_and_mutations_require_csrf(client, patient):
     assert detail.status_code == 200
 
 
+def test_timezone_dropdown_saves_selected_location(client, patient, calls):
+    csrf = sign_in(client)
+    page = client.get("/").text
+    assert '<select id="patient-timezone" name="timezone"' in page
+    assert '<option value="Asia/Kolkata" selected>India</option>' in page
+    assert "patient's local time" in page
+    response = client.post(
+        "/api/calls", json={**patient.model_dump(mode="json"), "timezone": "America/New_York"},
+        headers={"X-CSRF-Token": csrf, "Idempotency-Key": "timezone-test"},
+    )
+    assert response.status_code == 202
+    assert calls.raw(response.json()["id"]).input_data["timezone"] == "America/New_York"
+
+
 def test_readiness_never_returns_credentials(client):
     sign_in(client)
     response = client.get("/api/readiness")

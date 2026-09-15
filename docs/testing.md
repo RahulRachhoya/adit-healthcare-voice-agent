@@ -1,5 +1,15 @@
 # Verification and testing
 
+## Appointment, timezone and closing regression checks
+
+The appointment update passes **119 local tests**, with four PostgreSQL-only
+checks skipped locally and reserved for the CI test database. Ruff and wheel
+packaging pass. The new cases cover rolling dates, timezone conversion and DST,
+booking preservation, and a real LiveKit SDK session that closes after one farewell
+without requesting another model turn. See [appointments](appointments.md) for
+behavior and the remaining recipient-observed telephone check.
+
+
 ## Actual Vobiz call, full report and clean installation — 2026-09-15
 
 - Created the Vobiz outbound trunk and corresponding LiveKit trunk after the

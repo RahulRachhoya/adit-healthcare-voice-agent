@@ -4,16 +4,14 @@ import argparse
 import asyncio
 import getpass
 import json
-from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from argon2 import PasswordHasher
 from sqlalchemy import text
 
 from adit_voice_agent.config import get_settings
-from adit_voice_agent.db.models import Slot
 from adit_voice_agent.db.session import create_session_factory
+from adit_voice_agent.services.availability import ensure_upcoming_slots
 from adit_voice_agent.services.post_call import PostCallProcessor, adapter_for
 
 
@@ -43,25 +41,15 @@ def check_setup():
 
 
 def seed_demo_data():
-    parser = argparse.ArgumentParser(description="Seed future synthetic appointment slots; never create calls.")
-    parser.add_argument("--file", default="examples/appointment_slots.json")
-    args = parser.parse_args()
-    data = json.loads(Path(args.file).read_text(encoding="utf-8"))
-    if data.get("synthetic") is not True:
-        raise SystemExit("Only explicitly synthetic slot definitions are accepted.")
-    zone = ZoneInfo(data["timezone"])
-    today = datetime.now(zone).date()
+    parser = argparse.ArgumentParser(description="Prepare today's upcoming synthetic appointments; never create calls.")
+    parser.parse_args()
     sessions = create_session_factory(get_settings().database_url)
-    count = 0
-    with sessions.begin() as db:
-        for item in data["slots"]:
-            day = today + timedelta(days=item["days_from_today"])
-            start = datetime(day.year, day.month, day.day, item["hour"], item["minute"], tzinfo=zone)
-            slot_id = f"demo-{start:%Y%m%d-%H%M}"
-            if db.get(Slot, slot_id) is None:
-                db.add(Slot(id=slot_id, doctor=item["doctor"], starts_at=start.astimezone(UTC), timezone=data["timezone"]))
-                count += 1
-    print(f"Created {count} synthetic appointment slots.")
+    try:
+        with sessions.begin() as db:
+            identifiers = ensure_upcoming_slots(db)
+        print(f"Prepared {len(identifiers)} upcoming synthetic appointment slots.")
+    finally:
+        sessions.kw["bind"].dispose()
 
 
 def retry_finalization():

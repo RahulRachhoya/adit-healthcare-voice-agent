@@ -2,7 +2,7 @@
 
 ## Before recording the walkthrough
 
-Complete the external-service preflight and live tests. Start local PostgreSQL, the web app and voice worker, seed fresh slots, confirm free balance, and arrange one consenting recipient. Use synthetic medical values. Hide account billing details, credentials and full recipient numbers from the recording.
+Complete the external-service preflight and live tests. Start local PostgreSQL, the web app and voice worker, check the automatically refreshed upcoming slots, confirm free balance, and arrange one consenting recipient. Use synthetic medical values. Hide account billing details, credentials and full recipient numbers from the recording.
 
 The [September 15 call](call-evidence.md) has verified telephone audio, a saved
 booking, analysis and a real Opik online score. Use that existing evidence for

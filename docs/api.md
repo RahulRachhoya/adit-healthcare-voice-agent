@@ -36,6 +36,8 @@ Readiness also returns `model_fallback.configured`, its provider and model name,
 
 This is an illustrative fictional number, **not an approved test destination**. Use a real consenting, trial-permitted number in private configuration. Metric values must be finite, nonnegative numbers with at most four decimal places; units and measurement dates are required; future dates and unknown fields are rejected.
 
+`timezone` is the patient's IANA timezone, defaulting to `Asia/Kolkata`. The dashboard offers named locations in a dropdown; the API accepts valid IANA zones. Available slot `local_time`, booking details and spoken confirmation use this zone, while `starts_at` remains the same UTC appointment instant. Daylight-saving offsets are calculated for the appointment date.
+
 ## Idempotency and dispatch
 
 An identical key/body reuses the saved call without another dispatch or attempt increment. Reusing a key for changed input returns `409`. Save the original key when retrying an HTTP request.
