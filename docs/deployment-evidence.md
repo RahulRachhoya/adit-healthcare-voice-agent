@@ -40,6 +40,10 @@ The owner's hosted test reached the recipient and captured the greeting and spok
 
 The repair selects `gemini-3.5-flash-lite`, checks model capacity before dialing, handles unrecoverable session errors with a spoken failure notice, and stores `session_error` separately from processing errors. Flash-Lite passed a real text-only response and appointment-slot tool check. No replacement telephone call was placed during this repair.
 
+The failed call's original transcript, recording, timestamps, and trace identity were preserved while its status and analysis were corrected. The hosted API now exposes the failure reason, and the original audio returned HTTP 206 with a valid Ogg header. Appointment analysis now distinguishes a failed conversation from an unattempted booking and rejects unsupported booking-failure claims. The unchanged Opik online rule scored the corrected report **1.0**, because `not_attempted` matches the saved booking and empty tool history; that score does not mean the telephone conversation succeeded.
+
+The main repair passed [97 GitHub tests and both container builds](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/runs/35018783924), deployed successfully to Render, and passed [LiveKit deployment](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/runs/35019088535). Subsequent workflow runs include the additional booking-outcome regression checks.
+
 ## Remaining live verification
 
 A separately authorized call from the hosted dashboard must still confirm the full hosted path: recipient answers, agent discusses submitted metrics, simulated appointment result is saved, recording plays, analysis completes, and Opik online scoring appears. Configuration presence and worker registration alone do not prove that telephone path.

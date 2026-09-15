@@ -31,6 +31,14 @@ def validate_analysis(analysis: Analysis, booking: dict, transcript: list, tools
         raise ValueError("Analysis appointment details do not match the booking.")
     if not booked and (analysis.outcome == "booked" or analysis.appointment_details is not None):
         raise ValueError("Analysis invents an appointment.")
+    booking_failed = booking["status"] == "failed" or any(
+        event.get("name") == "book_appointment"
+        and isinstance(event.get("result"), dict)
+        and event["result"].get("status") == "failed"
+        for event in tools
+    )
+    if analysis.outcome == "failed" and not booking_failed:
+        raise ValueError("Analysis claims a booking failure without a failed booking attempt.")
     ids = {item["id"] for item in [*transcript, *tools]}
     if not set(analysis.evidence).issubset(ids):
         raise ValueError("Analysis cites nonexistent evidence.")
