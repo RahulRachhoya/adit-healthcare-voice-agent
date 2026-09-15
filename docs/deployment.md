@@ -127,13 +127,15 @@ For Windows workspaces with inaccessible generated folders, deploy from a clean 
 
 Tests use fake voice/model/storage services and a dedicated disposable PostgreSQL service. They never make telephone calls.
 
-`deploy-agent.yml` is manually triggered on `main`. It uses a pinned official LiveKit deployment action and the GitHub environment named `production`. Set these GitHub Actions secrets:
+After both check jobs pass, `checks.yml` calls the reusable `deploy-agent.yml` automatically for a `push` to `main`. Merging a branch into `main` produces that same push event. Pull requests and other branches run checks only. The pinned checkout deploys the caller's tested commit, rather than checking out a newer branch head. Production runs finish in sequence instead of being cancelled during rollout. Render's `checksPass` setting then deploys the successful main commit.
+
+The agent workflow uses a pinned official LiveKit deployment action and the GitHub environment named `production`. Set these GitHub Actions secrets:
 
 - `LIVEKIT_URL`
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`
 
-Runtime database, model, recording, and Opik credentials remain in LiveKit/Render. The deployment workflow requires an existing committed `livekit.toml`; it does not create accounts or place calls. Run it only after the same commit's checks pass. This repository's `production` environment has the three approved deployment secrets and permits deployments from `main` only. Forks must configure their own environment and deployment identifiers.
+Runtime database, model, recording, and Opik credentials remain in LiveKit/Render. The deployment workflow requires an existing committed `livekit.toml`; it does not create accounts or place calls. Normal releases invoke it through the required check jobs. Its optional manual entry point is for operator recovery after checking the same commit; it is not needed for pushes or merges. This repository's `production` environment has the three approved deployment secrets and permits deployments from `main` only. Forks must configure their own environment and deployment identifiers.
 
 ## 5. Verify before sharing
 

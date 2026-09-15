@@ -16,6 +16,10 @@ Call details include `session_error` for a durable conversation failure. `error`
 | `POST /api/calls/{id}/end` | Empty body permitted; terminate room and return updated call detail |
 | `GET /api/calls/{id}/recording` | `{"url":"temporary-signed-url","expires_in":300}` when ready; `409` while unavailable |
 
+Call details also include `review_metrics`, derived from saved call evidence. It contains call status, request duration (creation to end, including setup), recording duration when Egress measured it, transcript/recipient turn counts, unique supplied and discussed metric counts, consultation status, booking outcome, tool/failure counts, and recording/analysis/evaluation states. Unknown durations and analysis-derived values remain `null`; they are not fabricated as zero. No synthetic latency, token, cost, or composite quality score is invented. The dashboard fetches Opik scores through the authenticated server API, so the reviewer needs no Opik login.
+
+Readiness also returns `model_fallback.configured`, its provider and model name, never the key. Configuration presence is not a connectivity test.
+
 ## Create-call body
 
 ```json

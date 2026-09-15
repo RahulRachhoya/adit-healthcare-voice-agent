@@ -105,6 +105,9 @@ if (page?.dataset.page === "dashboard") {
         row.append(el("span", name), badge(state.configured ? "Configured" : "Needs setup", state.configured));
         readiness.append(row);
       }
+      const backup = el("div", undefined, "service-row");
+      backup.append(el("span", "Model backup"), badge(ready.model_fallback?.configured ? "Groq configured" : "Not configured", ready.model_fallback?.configured));
+      readiness.append(backup);
       if (!enabled) message("Live calling is disabled until the service accounts, approved number, and free-trial checks are ready.");
       const list = document.getElementById("call-list");
       if (!listing.calls.length) {
@@ -206,15 +209,37 @@ if (page?.dataset.page === "detail") {
         tools.append(item);
       }
       if (!call.tool_events.length) empty(tools, "No tool activity", "Appointment tool calls and their results will appear here.");
+      const metrics = call.review_metrics || {};
+      const review = document.getElementById("review-metrics");
+      review.replaceChildren();
+      const yesNo = value => value === null || value === undefined ? "Pending" : value ? "Yes" : "No";
+      const duration = seconds => {
+        if (seconds === null || seconds === undefined) return "Pending";
+        const rounded = Math.round(seconds);
+        return `${Math.floor(rounded / 60)}m ${rounded % 60}s`;
+      };
+      for (const [label, value] of [
+        ["Call status", readable(call.status)],
+        [metrics.recording_duration_seconds != null ? "Recorded audio" : "Request duration · includes setup", duration(metrics.recording_duration_seconds ?? metrics.request_duration_seconds)],
+        ["Patient reached", yesNo(metrics.patient_reached)],
+        ["Metrics discussed", metrics.metrics_discussed == null ? "Pending" : `${metrics.metrics_discussed} / ${metrics.metrics_supplied}`],
+        ["Consultation offered", yesNo(metrics.consultation_offered)],
+        ["Booking outcome", readable(metrics.booking_outcome)],
+        ["Conversation turns", metrics.transcript_turns ?? "Pending"],
+        ["Tool calls · failed", `${metrics.tool_calls ?? 0} · ${metrics.failed_tool_calls ?? 0}`],
+        ["Recording", readable(call.recording.status)],
+        ["Analysis", readable(call.analysis_status)],
+      ]) review.append(pair(label, value));
       const evaluation = document.getElementById("evaluation");
-      evaluation.replaceChildren();
+      evaluation.replaceChildren(el("h3", "Report accuracy"));
       for (const score of (call.evaluation.scores || [])) {
         evaluation.append(el("div", `${score.value} / 1`, `score${score.value === 0 ? " fail" : ""}`), el("p", score.reason || "Outcome correctness score."));
       }
-      if (!call.evaluation.scores?.length) evaluation.append(el("p", `Evaluation: ${readable(call.evaluation.status || "pending")}`, "muted"), pair("Trace export", readable(call.export_status)));
-      const traceLink = document.getElementById("opik-link");
-      traceLink.classList.toggle("hidden", !call.trace_url);
-      if (call.trace_url) traceLink.href = call.trace_url;
+      if (!call.evaluation.scores?.length) {
+        const status = call.export_status === "not_applicable" ? "No conversation to evaluate" : `Evaluation: ${readable(call.evaluation.status || "pending")}`;
+        evaluation.append(el("p", status, "muted"), pair("Evidence export", readable(call.export_status)));
+      }
+      evaluation.append(el("p", "This score checks whether the report matches the evidence. A passing score does not mean the call or booking succeeded.", "small"));
       const finished = call.finalization_status === "complete" &&
         (call.export_status === "not_applicable" || call.evaluation.status === "completed");
       if (!finished && polling++ < 100) timer = setTimeout(refresh, 3000);

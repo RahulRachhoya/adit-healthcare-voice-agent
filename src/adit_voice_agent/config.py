@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     google_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-3.5-flash-lite"
     gemini_analysis_model: str = ""
+    groq_api_key: SecretStr = SecretStr("")
+    groq_model: str = "openai/gpt-oss-120b"
     stt_model: str = "deepgram/nova-3"
     tts_model: str = "cartesia/sonic-3"
     tts_voice: str = ""
@@ -91,6 +93,8 @@ class Settings(BaseSettings):
         return {
             "calls_enabled": enabled,
             "configuration": components,
+            "model_fallback": {"configured": self.present("groq_api_key"), "provider": "Groq",
+                               "model": self.groq_model},
             "trial_preflight_confirmed": self.free_trial_verified,
             "live_test_verified": False,
             "note": "Configuration presence is not proof of connectivity or a successful telephone call.",

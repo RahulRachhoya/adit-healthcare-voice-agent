@@ -28,6 +28,8 @@ W = web, A = agent/finalizer, C = operator CLI.
 | `GOOGLE_API_KEY` | A/C | **Yes** | Gemini dialogue and structured analysis |
 | `GEMINI_MODEL` | A/C | No | Voice model; current default `gemini-3.5-flash-lite`, verified with streaming and a scheduling-tool response |
 | `GEMINI_ANALYSIS_MODEL` | A/C | No | Optional separate analysis model; verified `gemini-3.5-flash-lite`. Empty falls back to `GEMINI_MODEL` |
+| `GROQ_API_KEY` | W/A/C | **Yes** | Optional independent fallback for dialogue and post-call analysis; keep only in private runtime settings |
+| `GROQ_MODEL` | W/A/C | No | Backup model, default `openai/gpt-oss-120b`; free quotas remain account controlled |
 | `STT_MODEL` | A | No | Default `deepgram/nova-3` through LiveKit Inference |
 | `TTS_MODEL` | A | No | Default `cartesia/sonic-3` through LiveKit Inference |
 | `TTS_VOICE` | W/A | No | Required Cartesia voice ID; verified Jacqueline: `9626c31c-bec5-4cca-baa8-f8ba9e84c8bc` |
@@ -61,7 +63,7 @@ provisioning fields.
 
 On September 15, 2026, the Google API rejected `gemini-2.5-flash` for this key and recommended `gemini-3.6-flash`. That model initially passed streaming/tool checks, but a later hosted call exhausted its account-specific free daily limit of 20 requests. The voice default is now `gemini-3.5-flash-lite`, which was already used for analysis and passed a live text-only scheduling-tool check.
 
-The worker explicitly requests minimal thinking and disables the Google SDK's automatic function execution because LiveKit owns tool execution. A brief model request runs before recording and dialing, with a ten-second overall deadline. This consumes model quota but avoids dialing when model capacity is already unavailable. In-call LLM requests allow one retry with an eight-second request timeout. An unrecoverable provider error ends the call as failed, with a bounded attempt to speak a technical-failure notice through TTS.
+The worker explicitly requests minimal thinking and disables the Google SDK's automatic function execution because LiveKit owns tool execution. A brief model request runs before recording and dialing, with a twelve-second overall deadline. This consumes model quota but avoids dialing when model capacity is already unavailable. With Groq configured, LiveKit allows up to five seconds per provider and fails over instead of retrying the failed provider in the foreground. It does not replay a stream after text or tool calls have already been emitted, preventing duplicate speech or tool execution. Without a Groq key, only Gemini is used. See [model-fallback.md](model-fallback.md). An unrecoverable provider error ends the call as failed, with a bounded attempt to speak a technical-failure notice through TTS.
 
 Post-call analysis supplies `Analysis.model_json_schema()` through `response_json_schema`; the legacy schema field rejected `additionalProperties`. Model quotas remain provider-controlled. Changing an API key in the same Google project does not create a new quota allocation.
 

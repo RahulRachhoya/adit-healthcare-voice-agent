@@ -50,7 +50,9 @@ class RecordingService:
                         file_info = item.file_results[0] if item.file_results else item.file
                         if file_info.size <= 0:
                             return {**recording, "status": "failed", "error": "Recording file is empty."}
-                        return {**recording, "status": "ready", "size": file_info.size, "error": None}
+                        return {**recording, "status": "ready", "size": file_info.size,
+                                "duration_seconds": file_info.duration / 1_000_000_000 if file_info.duration else None,
+                                "error": None}
                     if item.status in {api.EgressStatus.EGRESS_FAILED, api.EgressStatus.EGRESS_ABORTED, api.EgressStatus.EGRESS_LIMIT_REACHED}:
                         return {**recording, "status": "failed", "error": "Egress did not complete."}
                 await asyncio.sleep(2)

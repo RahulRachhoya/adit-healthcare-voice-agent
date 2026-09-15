@@ -5,7 +5,6 @@ import json
 import logging
 from datetime import UTC, datetime
 
-from google.genai import types
 from google.protobuf.duration_pb2 import Duration
 from livekit import api
 from livekit.agents import (
@@ -19,10 +18,11 @@ from livekit.agents import (
     room_io,
 )
 from livekit.agents.voice.agent_session import SessionConnectOptions
-from livekit.plugins import google, silero
+from livekit.plugins import silero
 
 from adit_voice_agent.agent.evidence import history_evidence
 from adit_voice_agent.agent.healthcare_agent import HealthcareAgent
+from adit_voice_agent.agent.models import build_voice_model
 from adit_voice_agent.agent.tools import AppointmentTools
 from adit_voice_agent.config import get_settings
 from adit_voice_agent.db.session import create_session_factory
@@ -59,7 +59,7 @@ async def verify_voice_model(model):
     context = llm.ChatContext()
     context.add_message(role="user", content="Reply with READY only.")
     try:
-        async with asyncio.timeout(10):
+        async with asyncio.timeout(12):
             async with model.chat(
                 chat_ctx=context, conn_options=APIConnectOptions(max_retry=0, timeout=8),
             ) as stream:
@@ -125,12 +125,7 @@ async def entrypoint(ctx: JobContext):
     try:
         if not settings.readiness()["calls_enabled"] or call.input_data["phone"] not in settings.destinations:
             raise RuntimeError("Agent preflight incomplete or destination not approved")
-        voice_model = google.LLM(
-            model=settings.gemini_model, api_key=settings.google_api_key.get_secret_value(),
-            thinking_config={"thinking_level": "minimal"},
-            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(disable=True),
-            http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1)),
-        )
+        voice_model = build_voice_model(settings)
         await verify_voice_model(voice_model)
         session = AgentSession(
             stt=inference.STT(model=settings.stt_model, language="en",
@@ -138,7 +133,7 @@ async def entrypoint(ctx: JobContext):
                               api_secret=settings.livekit_api_secret.get_secret_value()),
             llm=voice_model,
             conn_options=SessionConnectOptions(
-                llm_conn_options=APIConnectOptions(max_retry=1, retry_interval=0.5, timeout=8),
+                llm_conn_options=APIConnectOptions(max_retry=0, timeout=8),
             ),
             tts=inference.TTS(model=settings.tts_model, voice=settings.tts_voice, language="en",
                               api_key=settings.livekit_api_key.get_secret_value(),

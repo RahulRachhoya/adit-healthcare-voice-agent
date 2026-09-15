@@ -4,7 +4,8 @@ permissions:
   contents: read
 concurrency:
   group: checks-${{ github.ref }}
-  cancel-in-progress: true
+  # Finish a production rollout before starting the next main commit.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -42,3 +43,8 @@ jobs:
         run: docker build --file Dockerfile.web --tag adit-web:check .
       - name: Build agent image without credentials
         run: docker build --file Dockerfile --tag adit-agent:check .
+  deploy-agent:
+    needs: [checks, containers]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-agent.yml
+    secrets: inherit

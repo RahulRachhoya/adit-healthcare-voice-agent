@@ -45,15 +45,31 @@ def validate_analysis(analysis: Analysis, booking: dict, transcript: list, tools
     return analysis
 
 
-class GeminiAnalyzer:
+class PostCallAnalyzer:
     def __init__(self, settings):
         self.settings = settings
+        self.model_used = settings.analysis_model
 
     async def analyze(self, payload) -> Analysis:
+        prompt = (Path(__file__).parents[1] / "prompts" / "post_call_analysis.md").read_text(encoding="utf-8")
+        try:
+            result = await self._gemini(prompt, payload)
+            self.model_used = self.settings.analysis_model
+            return result
+        except Exception:
+            if not self.settings.present("groq_api_key"):
+                raise
+        result = await self._groq(prompt, payload)
+        self.model_used = "groq/" + self.settings.groq_model
+        return result
+
+    async def _gemini(self, prompt, payload) -> Analysis:
         from google import genai
         from google.genai import types
-        prompt = (Path(__file__).parents[1] / "prompts" / "post_call_analysis.md").read_text(encoding="utf-8")
-        client = genai.Client(api_key=self.settings.google_api_key.get_secret_value())
+        client = genai.Client(
+            api_key=self.settings.google_api_key.get_secret_value(),
+            http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1)),
+        )
         try:
             response = await asyncio.wait_for(client.aio.models.generate_content(
                 model=self.settings.analysis_model,
@@ -63,10 +79,29 @@ class GeminiAnalyzer:
                     response_json_schema=Analysis.model_json_schema(), temperature=0,
                     thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.MINIMAL),
                 ),
-            ), timeout=30)
+            ), timeout=20)
             return Analysis.model_validate_json(response.text)
         finally:
             await client.aio.aclose()
+
+    async def _groq(self, prompt, payload) -> Analysis:
+        import httpx
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": "Bearer " + self.settings.groq_api_key.get_secret_value()},
+                json={
+                    "model": self.settings.groq_model, "temperature": 0,
+                    "reasoning_effort": "low", "max_completion_tokens": 2048,
+                    "messages": [{"role": "system", "content": prompt},
+                                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}],
+                    "response_format": {"type": "json_schema", "json_schema": {
+                        "name": "call_analysis", "strict": False, "schema": Analysis.model_json_schema(),
+                    }},
+                },
+            )
+            response.raise_for_status()
+            return Analysis.model_validate_json(response.json()["choices"][0]["message"]["content"])
 
 
 class PostCallProcessor:
@@ -75,7 +110,7 @@ class PostCallProcessor:
         self.settings = settings
         self.calls = CallService(sessions, settings)
         self.bookings = BookingService(sessions)
-        self.analyzer = analyzer or GeminiAnalyzer(settings)
+        self.analyzer = analyzer or PostCallAnalyzer(settings)
         self.recording = recording or RecordingService(settings)
         self.adapter = adapter or adapter_for(settings)
 
@@ -148,7 +183,9 @@ class PostCallProcessor:
                           "synthetic_health_data": True, "finalized_at": utcnow().isoformat(),
                           "session_error": call.session_error,
                           "analysis_timing": {"started_at": analysis_start, "ended_at": analysis_end,
-                                              "model": self.settings.analysis_model}},
+                                              "model": prior_timing.get("model") if call.analysis_status == "ready"
+                                              else getattr(self.analyzer, "model_used", self.settings.analysis_model)}},
+
                 variables=variables, transcript=call.transcript, tool_events=call.tool_events,
                 booking=booking,
                 recording={**recording, "bucket": self.settings.recording_bucket,

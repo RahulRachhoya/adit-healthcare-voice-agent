@@ -10,7 +10,7 @@
     <aside class="stack">
       <section class="card"><span class="mini-label">APPOINTMENT</span><h2 id="booking-title">Awaiting outcome</h2><div id="booking"></div></section>
       <section class="card" id="recording"><span class="mini-label">CALL AUDIO</span><h2>Recording</h2><p id="recording-status" class="muted">Pending</p><button class="button subtle hidden" id="load-recording" type="button">Load recording</button><audio id="call-audio" class="hidden" controls preload="none"></audio></section>
-      <section class="card accent-card"><span class="mini-label">INDEPENDENT REVIEW</span><h2>Opik evaluation</h2><div id="evaluation"></div><a id="opik-link" class="button subtle hidden" target="_blank" rel="noopener noreferrer">Open call in Opik ↗</a></section>
+      <section class="card accent-card" aria-labelledby="review-title"><span class="mini-label">CALL OUTCOME &amp; INDEPENDENT REVIEW</span><h2 id="review-title">Call results</h2><div id="review-metrics" class="review-metrics"></div><div id="evaluation" aria-live="polite"></div><p class="small">Evaluation powered by Opik. All results are available here.</p></section>
     </aside>
   </div>
   <div class="two-columns bottom-grid"><section class="card"><span class="mini-label">POST-CALL</span><h2>Analysis</h2><div id="analysis"></div></section><section class="card"><span class="mini-label">EXECUTION EVIDENCE</span><h2>Tool activity</h2><div id="tools"></div></section></div>

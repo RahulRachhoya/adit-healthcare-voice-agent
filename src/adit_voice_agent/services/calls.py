@@ -202,6 +202,8 @@ class CallService:
     def detail(self, call_id):
         from adit_voice_agent.services.booking import BookingService
         call = self.raw(call_id)
+        from adit_voice_agent.services.review import review_metrics
+        booking = BookingService(self.sessions).result(call_id)
         patient = dict(call.input_data)
         patient["phone"] = f"••••{patient['phone'][-4:]}"
         return {
@@ -210,7 +212,7 @@ class CallService:
             "ended_at": call.ended_at.isoformat() if call.ended_at else None,
             "transcript": call.transcript, "tool_events": call.tool_events,
             "evidence_complete": call.evidence_complete,
-            "booking": BookingService(self.sessions).result(call_id),
+            "booking": booking, "review_metrics": review_metrics(call, booking),
             "recording": {"status": call.recording.get("status", "pending")},
             "analysis": call.analysis, "analysis_status": call.analysis_status,
             "finalization_status": call.finalization_status, "export_status": call.export_status,

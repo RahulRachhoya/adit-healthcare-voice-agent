@@ -8,14 +8,13 @@ from types import SimpleNamespace
 import httpx
 import pytest
 from google import genai
-from google.genai import types
 from google.protobuf.duration_pb2 import Duration
 from livekit import api
 from livekit.agents import llm
 
 from adit_voice_agent.agent.healthcare_agent import HealthcareAgent
 from adit_voice_agent.services.calls import LiveKitGateway
-from adit_voice_agent.services.post_call import GeminiAnalyzer
+from adit_voice_agent.services.post_call import PostCallAnalyzer
 
 
 def test_agent_tools_register_with_livekit():
@@ -108,10 +107,14 @@ async def test_gemini_analysis_uses_supported_json_schema(settings, monkeypatch,
 
     original_client = genai.Client
     transport = httpx.MockTransport(respond)
-    monkeypatch.setattr(genai, "Client", lambda **kwargs: original_client(
-        **kwargs, http_options=types.HttpOptions(async_client_args={"transport": transport}),
-    ))
-    result = await GeminiAnalyzer(settings).analyze({
+    def mock_client(**kwargs):
+        options = kwargs.pop("http_options")
+        assert options.retry_options.attempts == 1
+        options = options.model_copy(update={"async_client_args": {"transport": transport}})
+        return original_client(**kwargs, http_options=options)
+
+    monkeypatch.setattr(genai, "Client", mock_client)
+    result = await PostCallAnalyzer(settings).analyze({
         name: fixture[name] for name in ("transcript", "tool_events", "booking")
     })
     assert len(requests) == 1

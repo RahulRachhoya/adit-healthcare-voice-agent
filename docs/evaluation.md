@@ -72,7 +72,7 @@ Every returned score has source `online_scoring`. The [local evidence file](../a
 
 ## Automatic execution
 
-Completed conversation reports with ready recordings are exported into the project's filtered trace stream. Opik runs its online rule independently. The dashboard reads matching feedback, caching checks for at least ten seconds. It displays pending/unavailable states; it never writes its own passing feedback score.
+Completed conversation reports with ready recordings are exported into the project's filtered trace stream. Opik runs its online rule independently. The dashboard reads matching feedback, caching checks for at least ten seconds. The authenticated **Call results** card displays the score, reason, call status, request/recording duration, conversation turns, supplied-metric coverage, consultation and booking outcome, tool counts, and recording/analysis status. Reviewers need only the dashboard login; there is no external Opik-login button. Pending and unavailable values remain explicit. The card never writes its own passing score, and it explains that a passing report-accuracy score can accompany a failed call.
 
 No-answer calls with no captured conversation are retained locally and marked not applicable for completed-conversation evaluation. A hung-up conversation with actual transcript can still be evaluated.
 

@@ -54,7 +54,11 @@ services:
       - key: GOOGLE_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-3.6-flash
+        value: gemini-3.5-flash-lite
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
       - key: GEMINI_ANALYSIS_MODEL
         value: gemini-3.5-flash-lite
       - key: STT_MODEL

@@ -44,7 +44,7 @@ def worker_run(monkeypatch, settings, sessions, calls, patient, gateway):
 
     class Session:
         def __init__(self, **kwargs):
-            assert kwargs["conn_options"].llm_conn_options.max_retry == 1
+            assert kwargs["conn_options"].llm_conn_options.max_retry == 0
             self.history = SimpleNamespace(items=[])
 
         def on(self, name):
@@ -77,7 +77,7 @@ def worker_run(monkeypatch, settings, sessions, calls, patient, gateway):
     monkeypatch.setattr(worker, "LiveKitGateway", lambda _: gateway)
     monkeypatch.setattr(worker, "RecordingService", lambda _: recording)
     monkeypatch.setattr(worker, "AgentSession", Session)
-    monkeypatch.setattr(worker.google, "LLM", lambda **_: model)
+    monkeypatch.setattr(worker, "build_voice_model", lambda _: model)
     monkeypatch.setattr(worker.inference, "STT", lambda **_: None)
     monkeypatch.setattr(worker.inference, "TTS", lambda **_: None)
     monkeypatch.setattr(worker.silero.VAD, "load", lambda: None)

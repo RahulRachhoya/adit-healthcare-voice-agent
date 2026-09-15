@@ -177,7 +177,9 @@ docker build -f Dockerfile -t adit-agent:check .
 
 Ordinary tests use fake external services and never dial. PostgreSQL concurrency tests require a dedicated `TEST_DATABASE_URL`. The initial public commit passed both GitHub Actions jobs: lint/migrations/tests and clean Linux builds of both containers. [Current checks](https://github.com/RahulRachhoya/adit-healthcare-voice-agent/actions/workflows/checks.yml) report subsequent commits. Historical local verification passed 93 tests; a later focused check passed 69.
 
-The checks workflow runs lint, migrations, tests, and both container builds. The agent-deployment workflow is manually triggered after initial cloud setup. Follow [deployment.md](docs/deployment.md) for service configuration, secrets, first deployment, redeployment, and recovery.
+Every push and pull request runs lint, test-database migrations, tests, and both container builds. A successful push or merge into `main` automatically deploys that same commit to LiveKit; Render then deploys after GitHub checks pass. Branch and pull-request checks do not deploy production. Initial account/secret setup is still required; routine code releases need no manual deployment. See [deployment.md](docs/deployment.md).
+
+Gemini dialogue and analysis can fall back to **Groq GPT-OSS 120B** when `GROQ_API_KEY` is configured. The [fallback guide](docs/model-fallback.md) records free-plan limits, failure behavior and text-only verification. The call page includes a **Call results** card with saved call metrics and the server-fetched Opik score; reviewers do not need an Opik account.
 
 ## Documentation
 

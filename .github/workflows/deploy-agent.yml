@@ -1,5 +1,6 @@
 name: Deploy LiveKit agent
 on:
+  workflow_call:
   workflow_dispatch:
 permissions:
   contents: read

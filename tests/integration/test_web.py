@@ -30,6 +30,23 @@ def test_private_endpoints_require_login(client, path):
     assert client.get(path).status_code == 401
 
 
+def test_reviewer_gets_metrics_and_scores_without_opik_login(client, calls, active_call):
+    from tests.unit.test_analysis import analysis
+    calls.finish(active_call, "failed", "Synthetic model outage")
+    calls.update(active_call, analysis=analysis(outcome="not_attempted").model_dump(),
+                 analysis_status="ready", export_status="ready", trace_id="synthetic-trace")
+    sign_in(client)
+    response = client.get(f"/api/calls/{active_call}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["review_metrics"]["call_status"] == "failed"
+    assert data["review_metrics"]["booking_outcome"] == "not_attempted"
+    assert data["evaluation"]["scores"][0]["value"] == 1
+    page = client.get(f"/calls/{active_call}")
+    assert "Call results" in page.text and 'id="review-metrics"' in page.text
+    assert "Open call in Opik" not in page.text and 'id="opik-link"' not in page.text
+
+
 def test_login_form_and_session_flags(client):
     response = client.get("/login")
     assert client.get("/").url.path == "/login"
